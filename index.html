@@ -3,26 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <title>Distribuție Grupe - Regula Șarpelui</title>
+  <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+  <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f9f9f9; }
-    input, button, textarea { margin: 5px 0; padding: 8px; width: 100%; max-width: 600px; }
-    .grupa { margin-top: 10px; padding: 10px; background: #fff; border: 1px solid #ccc; width: fit-content; }
-    label { font-weight: bold; display: block; margin-top: 10px; }
-    #rezultat { margin-top: 20px; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      padding: 40px;
+      background: #f0f0f0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .grupa {
+      margin-top: 20px;
+      padding: 15px;
+      border-left: 4px solid #3f51b5;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      resize: vertical;
+    }
+
+    .mdl-button {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
-  <h2>Distribuție Grupe - Regula Șarpelui</h2>
+  <div class="container">
+    <h4 class="mdl-typography--headline">Distribuție Grupe - Regula Șarpelui</h4>
 
-  <label for="jucatoriInput">Lista jucătorilor (unul pe linie):</label>
-  <textarea id="jucatoriInput" rows="10" placeholder="Ex: Andrei&#10;Maria&#10;George&#10;..."></textarea>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
+      <textarea class="mdl-textfield__input" id="jucatoriInput" rows="8"></textarea>
+      <label class="mdl-textfield__label" for="jucatoriInput">Lista jucătorilor (unul pe linie)</label>
+    </div>
 
-  <label for="jucatoriPerGrupa">Jucători per grupă:</label>
-  <input type="number" id="jucatoriPerGrupa" value="6" min="1">
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+      <input class="mdl-textfield__input" type="number" id="jucatoriPerGrupa" value="6" min="1">
+      <label class="mdl-textfield__label" for="jucatoriPerGrupa">Jucători per grupă</label>
+    </div>
 
-  <button onclick="genereazaGrupe()">Generează Grupele</button>
+    <br>
+    <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" onclick="genereazaGrupe()">
+      Generează Grupe
+    </button>
 
-  <div id="rezultat"></div>
+    <div id="rezultat"></div>
+  </div>
 
   <script>
     function genereazaGrupe() {
@@ -40,34 +78,26 @@
       const grupe = Array.from({ length: nrGrupe }, () => []);
       const numeGrupe = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-      // Regula șarpelui
       let idx = 0, directie = 1;
       for (let i = 0; i < total; i++) {
         grupe[idx].push(jucatori[i]);
 
         if (directie === 1) {
-          if (idx < nrGrupe - 1) {
-            idx++;
-          } else {
-            directie = -1;
-          }
+          if (idx < nrGrupe - 1) idx++;
+          else directie = -1;
         } else {
-          if (idx > 0) {
-            idx--;
-          } else {
-            directie = 1;
-          }
+          if (idx > 0) idx--;
+          else directie = 1;
         }
       }
 
-      // Afișare
       const container = document.getElementById('rezultat');
       container.innerHTML = '';
       grupe.forEach((grupa, i) => {
         const div = document.createElement('div');
         div.className = 'grupa';
         const nume = numeGrupe[i] || `Grupa ${i + 1}`;
-        div.innerHTML = `<strong>Grupa ${nume}</strong>:<br>${grupa.join('<br>')}`;
+        div.innerHTML = `<strong>Grupa ${nume}</strong><br>${grupa.join('<br>')}`;
         container.appendChild(div);
       });
     }
