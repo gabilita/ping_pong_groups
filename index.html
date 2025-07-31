@@ -2,105 +2,110 @@
 <html lang="ro">
 <head>
   <meta charset="UTF-8">
-  <title>Distribuție Grupe - Regula Șarpelui</title>
+  <title>Grupe + Turnee AmaTur</title>
   <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
   <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
   <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      padding: 40px;
-      background: #f0f0f0;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: auto;
-      background: #fff;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .grupa {
-      margin-top: 20px;
-      padding: 15px;
-      border-left: 4px solid #3f51b5;
-      background-color: #f5f5f5;
-      border-radius: 4px;
-    }
-
-    textarea {
-      width: 100%;
-      height: 150px;
-      resize: vertical;
-    }
-
-    .mdl-button {
-      margin-top: 20px;
-    }
+    body { font-family: Roboto, sans-serif; padding: 40px; background: #f4f4f4; }
+    .container { max-width: 800px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; }
+    .grupa, .turneu, .link-turneu { margin-top: 20px; padding: 15px; border-left: 4px solid #3f51b5; background: #fafafa; border-radius: 4px; }
+    textarea { width: 100%; height: 150px; resize: vertical; }
+    a { text-decoration: none; color: #3f51b5; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h4 class="mdl-typography--headline">Distribuție Grupe - Regula Șarpelui</h4>
+    <h4 class="mdl-typography--headline">Grupe & Turnee AmaTur</h4>
 
-    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width:100%;">
-      <textarea class="mdl-textfield__input" id="jucatoriInput" rows="8"></textarea>
-      <label class="mdl-textfield__label" for="jucatoriInput">Lista jucătorilor (unul pe linie)</label>
+    <!-- Grupare jucatori -->
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+      <textarea class="mdl-textfield__input" id="jucatoriInput"></textarea>
+      <label class="mdl-textfield__label">Lista jucătorilor (unul pe linie)</label>
     </div>
-
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
       <input class="mdl-textfield__input" type="number" id="jucatoriPerGrupa" value="6" min="1">
-      <label class="mdl-textfield__label" for="jucatoriPerGrupa">Jucători per grupă</label>
+      <label class="mdl-textfield__label">Jucători per grupă</label>
     </div>
-
-    <br>
     <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" onclick="genereazaGrupe()">
       Generează Grupe
     </button>
-
     <div id="rezultat"></div>
+
+    <!-- Turnee viitoare (text simplu) -->
+    <h5>Turnee viitoare calendar 2025</h5>
+    <div id="turnee"></div>
+
+    <!-- Linkuri forum -->
+    <h5>Link-uri către aceste turnee pe forum</h5>
+    <div id="links-turnee"></div>
   </div>
 
   <script>
-    function genereazaGrupe() {
-      const inputText = document.getElementById('jucatoriInput').value.trim();
-      const jucatori = inputText.split('\n').map(n => n.trim()).filter(n => n);
-      const peGrupa = parseInt(document.getElementById('jucatoriPerGrupa').value);
-      const total = jucatori.length;
-
-      if (total === 0 || isNaN(peGrupa) || peGrupa < 1) {
-        alert("Introdu o listă validă de jucători și un număr valid de jucători pe grupă.");
-        return;
-      }
-
-      const nrGrupe = Math.ceil(total / peGrupa);
-      const grupe = Array.from({ length: nrGrupe }, () => []);
-      const numeGrupe = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-      let idx = 0, directie = 1;
-      for (let i = 0; i < total; i++) {
-        grupe[idx].push(jucatori[i]);
-
-        if (directie === 1) {
-          if (idx < nrGrupe - 1) idx++;
-          else directie = -1;
-        } else {
-          if (idx > 0) idx--;
-          else directie = 1;
-        }
-      }
-
-      const container = document.getElementById('rezultat');
+    async function fetchTurnee() {
+      const resp = await fetch('https://api.allorigins.win/raw?url=https://amatur.ro/tenisdemasa/cal_2025');
+      const html = await resp.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const container = document.getElementById('turnee');
       container.innerHTML = '';
-      grupe.forEach((grupa, i) => {
-        const div = document.createElement('div');
-        div.className = 'grupa';
-        const nume = numeGrupe[i] || `Grupa ${i + 1}`;
-        div.innerHTML = `<strong>Grupa ${nume}</strong><br>${grupa.join('<br>')}`;
-        container.appendChild(div);
+      doc.body.innerText.split('\n').forEach(line => {
+        const t = line.trim();
+        if (/^[0-9]{2}/.test(t)) {
+          const div = document.createElement('div');
+          div.className = 'turneu';
+          div.textContent = t;
+          container.appendChild(div);
+        }
       });
     }
+
+    async function fetchLinks() {
+      const resp = await fetch('https://api.allorigins.win/raw?url=https://tenisdemasa.ro/forum');
+      const html = await resp.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const links = doc.querySelectorAll('a[href*="/forum/showthread.php"]');
+      const container = document.getElementById('links-turnee');
+      container.innerHTML = '';
+      links.forEach(a => {
+        const title = a.textContent.trim();
+        const href = a.href;
+        if (title.toLowerCase().includes('turneu')) {
+          const div = document.createElement('div');
+          div.className = 'link-turneu';
+          div.innerHTML = `<a href="${href}" target="_blank">${title}</a>`;
+          container.appendChild(div);
+        }
+      });
+    }
+
+    function genereazaGrupe() {
+      const jucatori = document.getElementById('jucatoriInput').value.trim().split('\n').map(s=>s.trim()).filter(s=>s);
+      const peGrupa = parseInt(document.getElementById('jucatoriPerGrupa').value);
+      if (!jucatori.length || !peGrupa) return alert('Listă jucători sau număr incorect.');
+      const nr = Math.ceil(jucatori.length/peGrupa);
+      const grupe = Array.from({length:nr},()=>[]);
+      let idx=0, dir=1;
+      jucatori.forEach((name,i)=>{
+        grupe[idx].push(name);
+        if (dir===1 && idx<nr-1) idx++;
+        else if (dir===1) dir=-1;
+        else if (dir===-1 && idx>0) idx--;
+        else dir=1;
+      });
+      const out = document.getElementById('rezultat');
+      out.innerHTML = '';
+      grupe.forEach((g,i)=>{
+        const div = document.createElement('div');
+        div.className = 'grupa';
+        div.innerHTML = `<strong>Grupa ${String.fromCharCode(65+i)}</strong><br>${g.join('<br>')}`;
+        out.appendChild(div);
+      });
+    }
+
+    fetchTurnee();
+    fetchLinks();
   </script>
 </body>
 </html>
