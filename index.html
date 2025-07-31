@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Distribuție Grupe - Regula Șarpelui</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f4f4f4; }
+    input, button { margin: 5px; padding: 5px; }
+    .grupa { margin-top: 10px; padding: 10px; background: #fff; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h2>Distribuție Grupe - Regula Șarpelui</h2>
+  <label>Total jucători: <input type="number" id="totalJucatori" value="44"></label><br>
+  <label>Jucători per grupă: <input type="number" id="jucatoriPerGrupa" value="6"></label><br>
+  <button onclick="genereazaGrupe()">Generează Grupe</button>
+
+  <div id="rezultat"></div>
+
+  <script>
+    function genereazaGrupe() {
+      const total = parseInt(document.getElementById('totalJucatori').value);
+      const peGrupa = parseInt(document.getElementById('jucatoriPerGrupa').value);
+      const numeGrupe = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const nrGrupe = Math.ceil(total / peGrupa);
+
+      // inițializare grupe
+      let grupe = Array.from({ length: nrGrupe }, () => []);
+
+      let directie = 1; // 1 = spre dreapta, -1 = spre stânga
+      let idx = 0;
+      for (let i = 1; i <= total; i++) {
+        grupe[idx].push(i);
+
+        if (directie === 1) {
+          if (idx < nrGrupe - 1) {
+            idx++;
+          } else {
+            directie = -1;
+          }
+        } else {
+          if (idx > 0) {
+            idx--;
+          } else {
+            directie = 1;
+          }
+        }
+      }
+
+      // Afișare rezultate
+      const container = document.getElementById('rezultat');
+      container.innerHTML = '';
+      grupe.forEach((grupa, i) => {
+        const div = document.createElement('div');
+        div.className = 'grupa';
+        div.innerHTML = `<strong>Grupa ${numeGrupe[i]}</strong>: ${grupa.join(', ')}`;
+        container.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
