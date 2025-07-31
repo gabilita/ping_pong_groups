@@ -4,33 +4,46 @@
   <meta charset="UTF-8">
   <title>Distribuție Grupe - Regula Șarpelui</title>
   <style>
-    body { font-family: Arial; padding: 20px; background: #f4f4f4; }
-    input, button { margin: 5px; padding: 5px; }
-    .grupa { margin-top: 10px; padding: 10px; background: #fff; border: 1px solid #ccc; }
+    body { font-family: Arial; padding: 20px; background: #f9f9f9; }
+    input, button, textarea { margin: 5px 0; padding: 8px; width: 100%; max-width: 600px; }
+    .grupa { margin-top: 10px; padding: 10px; background: #fff; border: 1px solid #ccc; width: fit-content; }
+    label { font-weight: bold; display: block; margin-top: 10px; }
+    #rezultat { margin-top: 20px; }
   </style>
 </head>
 <body>
   <h2>Distribuție Grupe - Regula Șarpelui</h2>
-  <label>Total jucători: <input type="number" id="totalJucatori" value="44"></label><br>
-  <label>Jucători per grupă: <input type="number" id="jucatoriPerGrupa" value="6"></label><br>
-  <button onclick="genereazaGrupe()">Generează Grupe</button>
+
+  <label for="jucatoriInput">Lista jucătorilor (unul pe linie):</label>
+  <textarea id="jucatoriInput" rows="10" placeholder="Ex: Andrei&#10;Maria&#10;George&#10;..."></textarea>
+
+  <label for="jucatoriPerGrupa">Jucători per grupă:</label>
+  <input type="number" id="jucatoriPerGrupa" value="6" min="1">
+
+  <button onclick="genereazaGrupe()">Generează Grupele</button>
 
   <div id="rezultat"></div>
 
   <script>
     function genereazaGrupe() {
-      const total = parseInt(document.getElementById('totalJucatori').value);
+      const inputText = document.getElementById('jucatoriInput').value.trim();
+      const jucatori = inputText.split('\n').map(n => n.trim()).filter(n => n);
       const peGrupa = parseInt(document.getElementById('jucatoriPerGrupa').value);
-      const numeGrupe = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const total = jucatori.length;
+
+      if (total === 0 || isNaN(peGrupa) || peGrupa < 1) {
+        alert("Introdu o listă validă de jucători și un număr valid de jucători pe grupă.");
+        return;
+      }
+
       const nrGrupe = Math.ceil(total / peGrupa);
+      const grupe = Array.from({ length: nrGrupe }, () => []);
+      const numeGrupe = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-      // inițializare grupe
-      let grupe = Array.from({ length: nrGrupe }, () => []);
-
-      let directie = 1; // 1 = spre dreapta, -1 = spre stânga
-      let idx = 0;
-      for (let i = 1; i <= total; i++) {
-        grupe[idx].push(i);
+      // Regula șarpelui
+      let idx = 0, directie = 1;
+      for (let i = 0; i < total; i++) {
+        grupe[idx].push(jucatori[i]);
 
         if (directie === 1) {
           if (idx < nrGrupe - 1) {
@@ -47,13 +60,14 @@
         }
       }
 
-      // Afișare rezultate
+      // Afișare
       const container = document.getElementById('rezultat');
       container.innerHTML = '';
       grupe.forEach((grupa, i) => {
         const div = document.createElement('div');
         div.className = 'grupa';
-        div.innerHTML = `<strong>Grupa ${numeGrupe[i]}</strong>: ${grupa.join(', ')}`;
+        const nume = numeGrupe[i] || `Grupa ${i + 1}`;
+        div.innerHTML = `<strong>Grupa ${nume}</strong>:<br>${grupa.join('<br>')}`;
         container.appendChild(div);
       });
     }
